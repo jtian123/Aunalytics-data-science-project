@@ -1,0 +1,46 @@
+import pandas as pd 
+import numpy as np 
+import matplotlib.pyplot as plt
+
+
+#Load Recertification.csv from Desktop
+rcf = pd.read_csv('/Users/jinyaotian/Desktop/Recertification.csv')
+
+rcf.columns
+rcf.head()
+len(rcf)
+rcf.info()
+
+#Add new column to rcf
+Num_Designations = np.zeros(len(rcf))
+rcf.insert(1, 'Num_Designations', Num_Designations, True)
+
+#Select CHSNC Program data
+CHSNC_df = rcf.loc[rcf['Acad Plan'] == 'CHSNC']
+CHSNC_df.reset_index(drop = True, inplace = True)
+
+CHSNC_df.info()
+CHSNC_df.head()
+CHSNC_df.columns
+#Check Uniqueness
+len(CHSNC_df['Emplid (Vw Tab Kpi Program Dtl)'].unique()) == len(CHSNC_df) #True
+
+#Calculate the number of designations that each student enrolled
+for i in range(len(CHSNC_df)):
+    if pd.isna(CHSNC_df.loc[i,'Active Designations']):
+        CHSNC_df.loc[i,'Num_Designations'] = 1
+    else: 
+        text = CHSNC_df.loc[i,'Active Designations']
+        CHSNC_df.loc[i,'Num_Designations'] = len(text.split(','))
+
+#Filter completition
+df_completition = CHSNC_df.loc[CHSNC_df['Degree Status'] == 'COMPLETED']
+#How many alumni/individuals have multiple designations?
+len(df_completition.loc[df_completition['Num_Designations'] > 1])
+#Ratio: For those who have completed the CHSNC program, 'have multiple designations' / 'total completition'
+len(df_completition.loc[df_completition['Num_Designations'] > 1])/len(df_completition)
+
+#Convert 'Program Declare Year' to datetime type
+CHSNC_df.loc[:,'Program Declare Year'] = pd.to_datetime(CHSNC_df['Program Declare Year'],infer_datetime_format = True)
+CHSNC_df['Program Declare Year'].min()
+CHSNC_df['Program Declare Year'].max()
